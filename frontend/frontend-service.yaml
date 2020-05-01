@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-frontend
+  labels:
+    component: example-frontend
+spec:
+  ports:
+    - port: 80
+  selector:
+    component: example-frontend
+  type: LoadBalancer
+  ## Mention GCP reserver IP Below
+  # loadBalancerIP: XX.XX.XX.XXls
+  

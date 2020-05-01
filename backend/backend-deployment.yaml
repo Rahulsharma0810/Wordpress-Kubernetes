@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: example-backend
+  namespace: example
+  name: example-backend
+spec:
+  selector:
+    matchLabels:
+      component: example-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: example-backend
+    spec:
+      containers:
+        - name: example-backend
+          image: mariadb:latest
+          ports:
+            - containerPort: 3306
+          args:
+            - --transaction-isolation=READ-COMMITTED
+            - --binlog-format=ROW
+            - --max-connections=1000
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQL_DATABASE
+                  name: example-backend-secrets
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQL_PASSWORD
+                  name: example-backend-secrets
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQL_ROOT_PASSWORD
+                  name: example-backend-secrets
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQL_USER
+                  name: example-backend-secrets
+          volumeMounts:
+            - name: example-backend-pvc
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: example-backend-pvc

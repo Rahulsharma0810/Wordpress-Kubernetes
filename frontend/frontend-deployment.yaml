@@ -1,0 +1,52 @@
+apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and befor
+kind: Deployment
+metadata:
+  labels:
+    component: example-frontend
+  namespace: example
+  name: example-frontend
+spec:
+  selector:
+    matchLabels:
+      component: example-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: example-frontend
+    spec:
+      containers:
+        - image: wordpress:php7.4-apache
+          name: example-frontend
+          ports:
+            - containerPort: 80
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: example-backend
+            - name: WORDPRESS_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: example-frontend-secrets
+                  key: MYSQL_DATABASE
+            - name: WORDPRESS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: example-frontend-secrets
+                  key: MYSQL_USER
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: example-frontend-secrets
+                  key: MYSQL_PASSWORD
+            - name: PHP_INI_SCAN_DIR
+              value: :/usr/local/etc/php/conf.custom
+          volumeMounts:
+            - name: example-frontend-pvc
+              mountPath: /var/www/html
+            - name: wordpress-config
+              mountPath: /usr/local/etc/php/conf.custom
+      volumes:
+        - name: example-frontend-pvc
+        - name: wordpress-config
+          configMap:
+            name: example-configmap
